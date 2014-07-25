@@ -281,7 +281,9 @@
 @end
 
 
-@implementation FXBlurView
+@implementation FXBlurView{
+    BOOL needsDisplay;
+}
 
 + (void)setBlurEnabled:(BOOL)blurEnabled
 {
@@ -305,6 +307,7 @@
 
 - (void)setUp
 {
+    needsDisplay = YES;
     if (!_iterationsSet) _iterations = 3;
     if (!_blurRadiusSet) [self blurLayer].blurRadius = 40;
     if (!_dynamicSet) _dynamic = YES;
@@ -456,6 +459,7 @@
 
 - (void)setNeedsDisplay
 {
+    needsDisplay = YES;
     [super setNeedsDisplay];
     [self.layer setNeedsDisplay];
 }
@@ -472,7 +476,9 @@
 
 - (void)displayLayer:(__unused CALayer *)layer
 {
-    [self updateAsynchronously:NO completion:NULL];
+    if(self.dynamic || needsDisplay){
+        [self updateAsynchronously:NO completion:NULL];
+    }
 }
 
 - (id<CAAction>)actionForLayer:(CALayer *)layer forKey:(NSString *)key
@@ -510,8 +516,7 @@
 {
     __strong FXBlurLayer *blurLayer = [self blurPresentationLayer];
     __strong CALayer *underlyingLayer = [self underlyingLayer];
-    CGRect bounds = [blurLayer convertRect:blurLayer.bounds toLayer:underlyingLayer];
-    bounds.origin = CGPointZero;
+    CGRect bounds = [self.blurLayer.superlayer convertRect:self.blurLayer.frame toLayer:underlyingLayer];
     
     self.lastUpdate = [NSDate date];
     CGFloat scale = 0.5;
@@ -596,6 +601,7 @@
 
 - (void)updateAsynchronously:(BOOL)async completion:(void (^)())completion
 {
+    needsDisplay = NO;
     if ([self shouldUpdate])
     {
         UIImage *snapshot = [self snapshotOfUnderlyingView];
