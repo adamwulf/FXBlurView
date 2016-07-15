@@ -405,11 +405,6 @@
     return _underlyingView ?: self.superview;
 }
 
--(UIImage*)underlyingImage
-{
-    return _underlyingImage;
-}
-
 - (CALayer *)underlyingLayer
 {
     return self.underlyingView.layer;
@@ -550,15 +545,9 @@
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextTranslateCTM(context, -bounds.origin.x, -bounds.origin.y);
     
-    if(_underlyingImage){
-        [[UIColor whiteColor] setFill];
-        CGContextFillRect(context, CGRectMake(0, 0, _underlyingView.bounds.size.width, _underlyingView.bounds.size.height));
-        [_underlyingImage drawInRect:CGRectMake(0, 0, _underlyingView.bounds.size.width, _underlyingView.bounds.size.height)];
-    }else{
-        NSArray *hiddenViews = [self prepareUnderlyingViewForSnapshot];
-        [underlyingLayer renderInContext:context];
-        [self restoreSuperviewAfterSnapshot:hiddenViews];
-    }
+    NSArray *hiddenViews = [self prepareUnderlyingViewForSnapshot];
+    [underlyingLayer renderInContext:context];
+    [self restoreSuperviewAfterSnapshot:hiddenViews];
 
     UIImage *snapshot = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
