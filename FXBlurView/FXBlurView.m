@@ -605,25 +605,27 @@
     needsDisplay = NO;
     if ([self shouldUpdate])
     {
-        UIImage *snapshot = [self snapshotOfUnderlyingView];
-        if (async)
-        {
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-                @autoreleasepool {
-                    UIImage *blurredImage = [self blurredSnapshot:snapshot radius:self.blurRadius];
-                    dispatch_sync(dispatch_get_main_queue(), ^{
-                        @autoreleasepool {
-                            [self setLayerContents:blurredImage];
-                            if (completion) completion();
-                        }
-                    });
-                }
-            });
-        }
-        else
-        {
-            [self setLayerContents:[self blurredSnapshot:snapshot radius:[self blurPresentationLayer].blurRadius]];
-            if (completion) completion();
+        @autoreleasepool {
+            UIImage *snapshot = [self snapshotOfUnderlyingView];
+            if (async)
+            {
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+                    @autoreleasepool {
+                        UIImage *blurredImage = [self blurredSnapshot:snapshot radius:self.blurRadius];
+                        dispatch_sync(dispatch_get_main_queue(), ^{
+                            @autoreleasepool {
+                                [self setLayerContents:blurredImage];
+                                if (completion) completion();
+                            }
+                        });
+                    }
+                });
+            }
+            else
+            {
+                [self setLayerContents:[self blurredSnapshot:snapshot radius:[self blurPresentationLayer].blurRadius]];
+                if (completion) completion();
+            }
         }
     }
     else if (completion)
